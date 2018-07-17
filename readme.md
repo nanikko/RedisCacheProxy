@@ -47,18 +47,6 @@ redis/worker // Contains logic for scheduling the work with worker pool
 main.go
 ```
 
-### Testing steps:
-```
-After running
-
-make deps
-make test
-
-puts a value against key - "key" and that can be verified using the following command:
-
-echo "*2\r\n$3\r\nGET\r\n$3\r\nkey\r\n" netcat localhost 10000
-```
-
 ### How long you spent on each part of the project.
 Coding 5h
 Unit Testing 0.5h
