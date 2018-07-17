@@ -1,42 +1,24 @@
-# High-level architecture overview.
-A Redis Proxy Service implements as an HTTP web Service.
-The system built with thread pool and LRU Cache, and support concurrent processing.
+# Overview
+The system supports worker pool and LRU Cache
 
-## What the code does.
-**Service/ProxyService** is the HTTP web server to take GET request. 
+The LRU cache being used is a wrapper over an external library that supports moving the entries based on update/access times. However, expiration
+is not supported. On cache miss, proxy searches Redis and updates the value against the access key in cache
 
-Each request, service checks if found in **cache** and not expired.
+It supports worker pool in that a fixed number of workers are used to perform the submitted jobs
 
-If yes, update the cache entry's lastUpdated time, move up the cache entry to prevent evict, return the result to client.
-If not found, search in Redis, if found, store in cache.
+## Tests:
+Manually tested using http endpoints. However, there are tests to verify cache evictions and redis proxy GET happy paths
 
-**Util** contains a implementation of golang version **Thread Pool**:
-
-Each job will send to a **Job Queue**, aiming to process by order.
-
-**WorkerPool** contains a configurable number of workers to handle jobs.
-
-**Worker** always listen to incoming job, and run forver until receives shutdown notification
-
-A **JobScheduler** to listen incoming job, find an avaiable worker from pool, assign the job to the worker. Run forever until receives shutdown notification.
-
-Infra contains the redisHandler low level implementation.
-
-main.go is the entry point.
-
-## Unit tests:
-cache_test covered: Cached GET, Gloabl expiry, LRU eviction, Fixed key size.
-threadpool_test: Single GET request. Concurrent requests(number of requests are more than the available workers)
 
 ## Algorithmic complexity of the cache operations.
 O(1). Lru Cache internally uses map to store.
 
 
-## Instructions for how to run the proxy and tests.
-### Build:
-For system only contains: make, docker, docker-compose, Bash:
+## Steps to run.
+```
+make deps
 make test
-(It download docker images, get all dependencies, build golang project inside the container, run golang unit tests)
+```
 
 ### Run:
 docker-compose up
@@ -48,12 +30,13 @@ docker run -p 10000:10000 myproxy -redisIpAndPort=127.0.0.1:6379
 
 | name | descr |
 |---|---|
-| `redisIpAndPort` | Redis Ip and Port. Default is localhost:6379 |
-| `expiry` | Proxy cache global expiry in second (defaults to 10 sec) |
 | `capacity` | Proxy cache capacity (defaults to 100) |
 | `port` | Server Port (defaults to 10000 ) |
-| `concurrentmax` | Max number of concurrent connections allowed |
+| `concurrentJobs` | Max number of concurrent connections allowed |
 | `workers` | Max number of requests can be executed in parallel |
+| `protocol` | Whether the request can be Http based or RESP based request |
+| `redisIpAndPort` | Redis Ip and Port. Default is localhost:6379 |
+| `expiry` | Proxy cache global expiry in second (defaults to 10 sec) |
 
 
 ### Test by using curl:

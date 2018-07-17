@@ -1,13 +1,10 @@
-# Go parameters
-GOCMD=go
-GOBUILD=$(GOCMD) build
-GOCLEAN=$(GOCMD) clean
-GOTEST=$(GOCMD) test
-GOGET=$(GOCMD) get
-BINARY_NAME=proxyservice
-BINARY_UNIX=$(BINARY_NAME)_unix
+test: docker
+	go test .
 
-test: 
-	# $(GOBUILD) -o $(BINARY_NAME) -v
-	# $(GOTEST) -v ./...
-	docker-compose build
+docker:
+	docker-compose up -d
+
+deps:
+	go get "github.com/go-redis/redis"
+	go get github.com/julienschmidt/httprouter
+	go get github.com/hashicorp/golang-lru
