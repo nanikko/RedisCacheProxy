@@ -14,41 +14,58 @@ Manually tested using http endpoints. However, there are tests to verify cache e
 O(1). Lru Cache internally uses map to store.
 
 
-## Steps to run.
+## Steps to run unit tests.
 ```
 make deps
 make test
 ```
 
 ### Run:
+docker-compose build
 docker-compose up
 
-If you just want to run the proxy in docker, and mannualy point to a redis backend:
-docker run -p 10000:10000 myproxy -redisIpAndPort=127.0.0.1:6379
-
 ### Options
-
-| name | descr |
-|---|---|
-| `capacity` | Proxy cache capacity (defaults to 100) |
 | `port` | Server Port (defaults to 10000 ) |
+| `protocol` | Whether the request can be Http based or RESP based request |
 | `concurrentJobs` | Max number of concurrent connections allowed |
 | `workers` | Max number of requests can be executed in parallel |
-| `protocol` | Whether the request can be Http based or RESP based request |
-| `redisIpAndPort` | Redis Ip and Port. Default is localhost:6379 |
+| `capacity` | Proxy cache capacity (defaults to 100) |
 | `expiry` | Proxy cache global expiry in second (defaults to 10 sec) |
+| `redisIpAndPort` | Redis Ip and Port. Default is localhost:6379 |
 
+## Code walkthrough
 
-### Test by using curl:
-curl -X G http://<IP>:<Port>/<your_word>
+```
+Dockerfile  // Dockerfile for go app
+Makefile
+README.md
+docker-compose.yaml  // Runs redis container and connects main go app
+cache // Directory that wraps minimal LRU cache logic
+proxy  // Have proxy implementations for both http and Tcp
+redis // Has abstractions over Redis Http and Tcp calls
+redis/worker // Contains logic for scheduling the work with worker pool
+main.go
+```
+
+### Testing steps:
+```
+After running
+
+make deps
+make test
+
+puts a value against key - "key" and that can be verified using the following command:
+
+echo "*2\r\n$3\r\nGET\r\n$3\r\nkey\r\n" netcat localhost 10000
+```
 
 ### How long you spent on each part of the project.
-Coding 2.5h
+Coding 5h
 Unit Testing 0.5h
-Docker,makefile, integration testing 1h
+Docker,makefile, integration testing 1.5h
 
-### A list of the requirements that you did not implement and the reasons for omitting them.
-Redis client protocol - Prefer http way. Easy to use, test, no integration effort.
+Had minimal exposure to Golang and that perhaps has led to more time spent and also to research on the ways to enqueue the jobs for the Bonus
+requirement
 
 
 

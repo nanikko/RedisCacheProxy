@@ -1,7 +1,9 @@
 test: docker
-	go test .
+	go test ./cache
+	go test ./proxy
 
 docker:
+	docker-compose build
 	docker-compose up -d
 
 deps:

@@ -12,7 +12,7 @@ import (
 )
 
 // redis client protocol
-var protocol = flag.String("protocol", "http", "Redis communication protocol. Default is RESP")
+var protocol = flag.String("protocol", "resp", "Redis communication protocol. Default is RESP")
 var port = flag.String("port", "10000", "Server Port")
 var redisAddr = flag.String("redisIpAndPort", "172.17.0.1:6379", "Redis Ip and Port. Default is localhost:6379")
 // cache vars
