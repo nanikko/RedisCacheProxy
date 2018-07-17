@@ -64,6 +64,7 @@ func main() {
 			RedisHandlerResp : redisHandlerResp,
 			Scheduler : scheduler,
 			Port : ":"+ *port,
+			Workers: *numWorkers,
 		}
 
 		// Listen to requests

@@ -15,14 +15,14 @@ type RedisProxyTcp struct {
 	RedisHandler *redis.RedisHandler
 	RedisHandlerResp *redis.RedisHandlerResp
 	Scheduler *redis.Scheduler
+	Workers int
 	lock chan struct{}
 	Port string
 }
 
-var pool = redis.NewWorkerPool(20)
-
 // Function that allows the proxy to continuously listen to new requests and asynchronously put them into the job queue
 func (rptcp *RedisProxyTcp) Listen() {
+	var pool = redis.NewWorkerPool(rptcp.Workers)
 	ln, _ := net.Listen("tcp", rptcp.Port)
 
 	// deferring closing the connection
@@ -47,9 +47,8 @@ func (rptcp *RedisProxyTcp) Listen() {
 			},
 		}
 
+		// Put the work into the pool
 		pool.Input <- &w
-
-		//go rptcp.handleConnection(conn)
 	}
 }
 
@@ -84,7 +83,7 @@ func getStringFromReader(r *bufio.Reader) (string, error) {
 	return resultStr, nil
 }
 
-// returns substring between two strings
+// Returns substring between two strings
 func between(value string, a string, b string) string {
 	// Get substring between two strings.
 	posFirst := strings.Index(value, a)
@@ -103,6 +102,7 @@ func between(value string, a string, b string) string {
 }
 
 func (rp *RedisProxyTcp) Get(key string) (bool, string) {
+	log.Println("========= GET is ", key)
 	_, cacheKey := rp.parseKey(key)
 	found, v := rp.Cache.Get(cacheKey)
 
@@ -111,27 +111,6 @@ func (rp *RedisProxyTcp) Get(key string) (bool, string) {
 		return true, v
 	} else {
 
-/*		resp := make(chan string)
-		defer close(resp)
-		// Create a new job and add that to job queue
-		work := redis.Job{
-			Request: key,
-			JobHandler: rp.RedisHandlerResp,
-			Resp: resp,
-		}
-		rp.Scheduler.JobQueue <- work
-
-		// Wait until the job is processed
-		v = <-resp
-
-		// Store the parsed value from the response in cache
-		if v != "" {
-			rp.Cache.Add(key, rp.ParseValue(v))
-		}
-		log.Printf("RedisProxy.Get.MISS: got value:%s for key:%s", v, key)
-		return false, v
-
-*/
         resultString := rp.RedisHandlerResp.Get(key)
 		return false, resultString
 	}

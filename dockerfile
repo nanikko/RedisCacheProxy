@@ -9,6 +9,6 @@ RUN go get github.com/julienschmidt/httprouter
 RUN go test -v RedisProxy/cache
 RUN go install -v ./...
 
-ENTRYPOINT ["/go/bin/RedisProxy", "-redisIpAndPort=172.17.0.1:6379","-expiry=10","-capacity=100","-port=10000","-concurrentJobs=1000","-workers=100"]
+ENTRYPOINT ["/go/bin/RedisProxy", "-redisIpAndPort=172.17.0.1:6379","protocol=resp","-expiry=10","-capacity=100","-port=10000","-concurrentJobs=1000","-workers=100"]
 
 EXPOSE 10000
